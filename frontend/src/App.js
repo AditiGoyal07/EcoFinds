@@ -20,23 +20,44 @@ function App() {
 
   return (
     <Router>
-      <nav style={{ padding: "10px", backgroundColor: "#4CAF50", display: "flex", flexWrap: "wrap" }}>
-        <Link to="/register" style={{ color: "white", marginRight: "15px" }}>Register</Link>
-        <Link to="/login" style={{ color: "white", marginRight: "15px" }}>Login</Link>
-        <Link to="/products" style={{ color: "white", marginRight: "15px" }}>Products</Link>
-        <Link to="/my-listings" style={{ color: "white", marginRight: "15px" }}>My Listings</Link>
-        <Link to="/add-product" style={{ color: "white", marginRight: "15px" }}>Add Product</Link>
-        <Link to="/dashboard" style={{ color: "white", marginRight: "15px" }}>Dashboard</Link>
-        <Link to="/cart" style={{ color: "white", marginRight: "15px" }}>Cart</Link>
-        <Link to="/purchases" style={{ color: "white", marginRight: "15px" }}>Purchases</Link>
+      {/* Navbar */}
+      <nav style={{ 
+          padding: "10px 20px", 
+          backgroundColor: "#4CAF50", 
+          display: "flex", 
+          flexWrap: "wrap", 
+          alignItems: "center",
+          gap: "10px" 
+        }}>
+        <span style={{ color: "white", fontWeight: "bold", fontSize: "25px", marginRight: "30px" }}>
+          🌿 EcoFinds
+        </span>
+        <Link to="/register" style={linkStyle}>Register</Link>
+        <Link to="/login" style={linkStyle}>Login</Link>
+        <Link to="/products" style={linkStyle}>Products</Link>
+        <Link to="/my-listings" style={linkStyle}>My Listings</Link>
+        <Link to="/add-product" style={linkStyle}>Add Product</Link>
+        <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
+        <Link to="/cart" style={linkStyle}>Cart</Link>
+        <Link to="/purchases" style={linkStyle}>Purchases</Link>
         <button 
           onClick={handleLogout} 
-          style={{ marginLeft: "auto", padding: "5px 10px", cursor: "pointer", fontWeight: "bold" }}
+          style={{ 
+            marginLeft: "auto", 
+            padding: "5px 15px", 
+            cursor: "pointer", 
+            fontWeight: "bold", 
+            borderRadius: "5px",
+            border: "none",
+            backgroundColor: "#fd6d63ff",
+            color: "white"
+          }}
         >
-          Logout
+          LOGOUT
         </button>
       </nav>
 
+      {/* Routes */}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -52,5 +73,15 @@ function App() {
     </Router>
   );
 }
+
+// Reusable style for links
+const linkStyle = {
+  color: "white",
+  textDecoration: "none",
+  fontWeight: "bold",
+  padding: "5px 10px",
+  borderRadius: "5px",
+  transition: "background-color 0.3s",
+};
 
 export default App;

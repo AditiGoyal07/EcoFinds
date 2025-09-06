@@ -1,53 +1,106 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../api/api";
+import { Link } from "react-router-dom";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
-  const [user, setUser] = useState(null);
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
 
-  useEffect(() => { fetchUser(); fetchProducts(); }, []);
+  useEffect(() => {
+    API.get("/products")
+      .then(res => {
+        setProducts(res.data);
+        setFilteredProducts(res.data);
+      })
+      .catch(err => console.error("Error fetching products:", err));
+  }, []);
 
-  const fetchUser = async () => { if (!token) return; try { const res = await API.get("/users/me", { headers: { Authorization: `Bearer ${token}` } }); setUser(res.data); } catch (err) { console.error(err); } };
-  const fetchProducts = async () => { try { const res = await API.get("/products"); setProducts(res.data); } catch (err) { console.error(err); } };
+  // 🔍 Apply filters whenever search or category changes
+  useEffect(() => {
+    let result = products;
 
-  const handleDelete = async (id) => { if (!token) return alert("You must be logged in to delete a product."); try { await API.delete(`/products/${id}`, { headers: { Authorization: `Bearer ${token}` } }); setProducts(products.filter(p => p.id !== id)); } catch (err) { console.error(err); alert("Error deleting product."); } };
-  const handleEdit = (id) => navigate(`/edit/${id}`);
-  const addToCart = (product) => { const cart = JSON.parse(localStorage.getItem("cart")) || []; localStorage.setItem("cart", JSON.stringify([...cart, product])); alert("Added to cart!"); };
+    if (search.trim()) {
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    if (category) {
+      result = result.filter(p => p.category === category);
+    }
+
+    setFilteredProducts(result);
+  }, [search, category, products]);
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Products</h2>
-      <ul style={styles.list}>
-        {products.map(p => (
-          <li key={p.id} style={styles.card}>
-            <strong style={{ fontSize: 18 }}>{p.title}</strong> - ${p.price}
-            <p style={{ margin: "5px 0" }}>{p.description}</p>
-            <em>{p.category}</em>
-            <div style={{ marginTop: 10 }}>
-              {user && user.id === p.userId && (
-                <>
-                  <button style={styles.editBtn} onClick={() => handleEdit(p.id)}>Edit</button>
-                  <button style={styles.delBtn} onClick={() => handleDelete(p.id)}>Delete</button>
-                </>
-              )}
-              {token && <button style={styles.cartBtn} onClick={() => addToCart(p)}>Add to Cart</button>}
-            </div>
-          </li>
+    <div style={{ padding: "20px" }}>
+      <h2 style={{ textAlign: "center", color: "#4CAF50", marginBottom: "20px" }}>
+        🌱 EcoFinds Marketplace
+      </h2>
+
+      {/* Search + Filter */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", gap: "10px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc", minWidth: "200px" }}
+        />
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          style={{ padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}
+        >
+          <option value="">All Categories</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Accessories">Accessories</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Home">Home</option>
+        </select>
+      </div>
+
+      {/* Product Grid */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", 
+        gap: "20px" 
+      }}>
+        {filteredProducts.map(p => (
+          <div key={p.id} style={{ border: "1px solid #ddd", borderRadius: "10px", padding: "10px", background: "#fff", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
+            
+            {/* Product Image */}
+            {p.image ? (
+              <img
+                src={p.image.startsWith("uploads") 
+                  ? `http://localhost:5500/${p.image}` 
+                  : `http://localhost:5500/uploads/${p.image}`}
+                alt={p.title}
+                style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "5px" }}
+              />
+            ) : (
+              <div style={{ width: "100%", height: "150px", background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "5px" }}>
+                No Image
+              </div>
+            )}
+
+            {/* Product Info */}
+            <h3 style={{ margin: "10px 0", color: "#333" }}>{p.title}</h3>
+            <p style={{ color: "#555", fontSize: "14px" }}>{p.description}</p>
+            <p style={{ fontWeight: "bold", color: "#4CAF50" }}>${p.price}</p>
+
+            {/* View Details Button */}
+            <Link 
+              to={`/product/${p.id}`} 
+              style={{ display: "inline-block", marginTop: "10px", padding: "8px 12px", background: "#4CAF50", color: "white", textDecoration: "none", borderRadius: "5px" }}
+            >
+              View Details
+            </Link>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: { maxWidth: 700, margin: "40px auto", padding: 20, fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" },
-  title: { textAlign: "center", marginBottom: 20, color: "#333" },
-  list: { listStyle: "none", padding: 0 },
-  card: { background: "#fff", margin: "10px 0", padding: 15, borderRadius: 10, boxShadow: "0 3px 8px rgba(0,0,0,0.1)" },
-  editBtn: { marginRight: 10, padding: "5px 10px", background: "#007bff", color: "white", border: "none", borderRadius: 6, cursor: "pointer" },
-  delBtn: { marginRight: 10, padding: "5px 10px", background: "#dc3545", color: "white", border: "none", borderRadius: 6, cursor: "pointer" },
-  cartBtn: { padding: "5px 10px", background: "#28a745", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }
-};

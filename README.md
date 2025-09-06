@@ -1,2 +1,2 @@
-# Team Codyssey
-# EcoFinds: Sustainable Second-Hand Marketplace
+## Team Codyssey
+## EcoFinds: Sustainable Second-Hand Marketplace
